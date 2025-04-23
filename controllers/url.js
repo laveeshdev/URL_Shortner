@@ -2,6 +2,29 @@ const shortid = require('shortid')
 const URL = require('../models/url')
 
 
+async function handleShowAllUrl(req , res)  {
+    const allUrls = await URL.find({}) ; 
+    return res.render("allUrls" , {urls : allUrls}) ;     
+}
+
+async function handleRedirect(req , res){
+    const shortId = req.params.shortid ;
+    console.log(shortId);
+    
+    const entry = await URL.findOneAndUpdate({
+        shortId},
+        {
+        $push : {visitHistory : {timestamp : Date.now()}}
+    }) ;
+    console.log(entry)
+    
+    const newUrl = entry.redirectUrl ; 
+   
+    res.redirect(newUrl)
+
+}
+
+
 async function handleGenerateNewShortUrl(req , res) {
     const body = req.body ; 
     if(!body.url) return res.status(400).json({msg : "url is required "})
@@ -31,6 +54,8 @@ async function handleAnalytics(req, res) {
 
 module.exports = {
     handleGenerateNewShortUrl , 
-    handleAnalytics
+    handleAnalytics , 
+    handleShowAllUrl,
+    handleRedirect ,
 }
 
